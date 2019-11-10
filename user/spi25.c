@@ -35,7 +35,6 @@ void spi_conf()//настройка spi
 	 GPIOB->MODER |= GPIO_MODER_MODER3_1;//01-output,00-input(after reset),10-AF,11-analog.
 	 GPIOB->AFR[0]  &=~ GPIO_AFRL_AFSEL3 ;//сброс
    GPIOB->AFR[0]  |= (GPIO_AFRL_AFSEL3_2 | GPIO_AFRL_AFSEL3_0);//AF=5 -SPI1	 
-	// GPIOB->OTYPER |= GPIO_OTYPER_OT3;//1-открытый коллектор,0-двухтактный(после сброса)
 	 GPIOB->OSPEEDR |=(GPIO_OSPEEDER_OSPEEDR3_1|
 	                  GPIO_OSPEEDER_OSPEEDR3_0);//10-высока€ скорость 10ћ√ц,01-2ћ√ц,11-50ћгц
 		  
@@ -44,16 +43,13 @@ void spi_conf()//настройка spi
 	 GPIOB->MODER |= GPIO_MODER_MODER4_1;//01-output,00-input(after reset),10-AF,11-analog.
 	 GPIOB->AFR[0]  &=~ GPIO_AFRL_AFSEL4 ;//сброс
    GPIOB->AFR[0]  |= (GPIO_AFRL_AFSEL4_2 | GPIO_AFRL_AFSEL4_0);//AF=5 -SPI1	 
-	// GPIOB->OTYPER |= GPIO_OTYPER_OT4;//1-открытый коллектор,0-двухтактный(после сброса)
-	// GPIOB->OSPEEDR |=(GPIO_OSPEEDER_OSPEEDR4_1|
-	 //                 GPIO_OSPEEDER_OSPEEDR4_0);//10-высока€ скорость 10ћ√ц,01-2ћ√ц,11-50ћгц
+	
   
   //PB5-MOSI:
 	 GPIOB->MODER &=~ GPIO_MODER_MODER5;//сброс
 	 GPIOB->MODER |= GPIO_MODER_MODER5_1;//01-output,00-input(after reset),10-AF,11-analog.
 	 GPIOB->AFR[0]  &=~ GPIO_AFRL_AFSEL5 ;//сброс
    GPIOB->AFR[0]  |= (GPIO_AFRL_AFSEL5_2 | GPIO_AFRL_AFSEL5_0);//AF=5 -SPI1	 
-	// GPIOB->OTYPER |= GPIO_OTYPER_OT5;//1-открытый коллектор,0-двухтактный(после сброса)
 	 GPIOB->OSPEEDR |=(GPIO_OSPEEDER_OSPEEDR5_1|
 	                  GPIO_OSPEEDER_OSPEEDR5_0);//10-высока€ скорость 10ћ√ц,01-2ћ√ц,11-50ћгц
 		

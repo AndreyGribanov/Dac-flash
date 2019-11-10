@@ -9,7 +9,7 @@
 
 unsigned char DAC_Buff[512]; //промежуточный буфер для данных которые ДМА перекидает в ЦАП
 unsigned char buffer[256];//буфер, в который считывает обработчик прерываний
- uint16_t Npage=0;//номер страницы памяти flash 25q16
+uint16_t Npage=0;//номер страницы памяти flash 25q16
  
  
  void init_RCC()//настройка тактирования,пользуемся картинкой CUBE MX
@@ -92,9 +92,19 @@ void WriteData(uint16_t N, uint16_t cnt)//копирование из массива в массив ,N-нач
 
 int main(void)
 {
+	
+init_RCC();
+spi_conf();	
 init_DAC_TIM6(); 	
 init_DMA();	
-
+NVIC_EnableIRQ (SPI1_IRQn);// Функции CMSIS разрешающие прерывания в NVIC
+	__enable_irq ();// Разрешаем глобальные прерывания
+	
+	
+	
+	
+	
+	
 WriteData(0,256);//заполнение первой половины
 WriteData(256,256);//заполнение второй половины
 
