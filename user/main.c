@@ -6,11 +6,12 @@
 #include "stm32f4xx.h"
 #include "delay.h" //Генерация пауз, как правило,всегда нужна во всех проектах
 #include "spi25.h"//процедуры для работы с flash
+#define reset_CS GPIOB->BSRR |= GPIO_BSRR_BS0//выбор кристалла не активен(лог 1)
 
 unsigned char DAC_Buff[512]; //промежуточный буфер для данных которые ДМА перекидает в ЦАП
-unsigned char buffer[256];//буфер, в который считывает обработчик прерываний
-uint16_t Npage=0;//номер страницы памяти flash 25q16
- 
+//unsigned char buffer[256];//буфер, в который считывает обработчик прерываний
+//uint16_t Npage=0;//номер страницы памяти flash 25q16
+//extern uint16_t i ;
  
  void init_RCC()//настройка тактирования,пользуемся картинкой CUBE MX
 {
@@ -78,16 +79,16 @@ DMA1_Stream5-> CR  |=  DMA_SxCR_CHSEL;          //Выбор канала(111)
 //DMA1_Stream5-> CR  |=  DMA_SxCR_EN;  	//разрешаем работу 5 потока DMA
 }//end init_DMA
 //***********************************************************************************************************************
-void WriteData(uint16_t N, uint16_t cnt)//копирование из массива в массив ,N-начальный индекс DAC_Buff,cnt-число элементов
-	{
- 	Read_Page(Npage);	//читаем страницу из памяти в buffer[]
-	Npage++;	
-	uint16_t i=0;	
-	while (cnt>0) {
-        DAC_Buff[N++]= buffer[i++];
-       cnt--;
-         }
-}//END WriteData
+//void WriteData(uint16_t N, uint16_t cnt)//копирование из массива в массив ,N-начальный индекс DAC_Buff,cnt-число элементов
+//	{
+// 	Read_Page(Npage);	//читаем страницу из памяти в buffer[]
+//	Npage++;	
+//	uint16_t i=0;	
+//	while (cnt>0) {
+//        DAC_Buff[N++]= buffer[i++];
+//       cnt--;
+//         }
+//}//END WriteData
 //**********************************************************************************************************************
 
 int main(void)
@@ -99,45 +100,35 @@ init_DAC_TIM6();
 init_DMA();	
 NVIC_EnableIRQ (SPI1_IRQn);// Функции CMSIS разрешающие прерывания в NVIC
 	__enable_irq ();// Разрешаем глобальные прерывания
-	
-	
-	
-	
-	
-	
-WriteData(0,256);//заполнение первой половины
-WriteData(256,256);//заполнение второй половины
+
+Read_En();	//команда на перевод в режим чтения с начальной 0 страницы
+Read_SPI(512);	//заполняем весь буфер
+
 
  DMA1_Stream5-> CR  |=  DMA_SxCR_EN;  	//разрешаем работу 5 потока DMA	
  TIM6->CR1 |= TIM_CR1_CEN;//запустить преобразование
 
-	
-	
-	
-	
-	
-	
-	
+		
 	
 while(1)
   {
       while(!(DMA1->HISR & DMA_HISR_HTIF5)) {}   //ждем освобождение первой части буфера 5 потока			
-			 
-			WriteData(0,256);//то читаем в первую половину буфера
-			if ((buffer[0]==0xff)&&(buffer[255]==0xff)){break;} 	
+			
+			Read_SPI(256);//обработчик сам расскидает по половинам,счетчик индекса до 512	
+			if ((DAC_Buff[0]==0xff)&&(DAC_Buff[255]==0xff)){break;} 	
       DMA1->HIFCR |= DMA_HISR_HTIF5;             //сбросить флаг
      
  
        while(!(DMA1->HISR & DMA_HISR_TCIF5)) {}   //ждем освобождение второй части буфера 5 потока
 			
-		 	 WriteData(256,256); // читаем во вторую часть буфера 
-			 if ((buffer[0]==0xff)&&(buffer[255]==0xff)){break;} 				
+				Read_SPI(256); 
+		 	 if ((DAC_Buff[256]==0xff)&&(DAC_Buff[511]==0xff)){break;} 				
         DMA1->HIFCR |= DMA_HISR_TCIF5;             //сбросить флаг
     
   }
   DAC->CR   &= ~DAC_CR_EN1;
   TIM6->CR1 &= ~TIM_CR1_CEN;
-
+  reset_CS;//в принципе,необязательно делать
 
  while(1){}//зависаем
 
